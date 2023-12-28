@@ -18,21 +18,67 @@
 # You can create any custom variable you would like, and they will be accessible
 # in the templates via {{ site.myvariable }}.
 
-title: Your awesome title
-email: your-email@example.com
-description: >- # this means to ignore newlines until "baseurl:"
-  Write an awesome description for your new site here. You can edit this
-  line in _config.yml. It will appear in your document head meta (for
-  Google search results) and in your feed.xml site description.
+locale: "ko-KR"
+name: "SY Choi"
+logo: "/assets/images/logo.png"
+title: 지식을 통해 지혜를 얻는다
+subtitle: Sapientia Per Scientiam
+email: chsy0823@gmail.com
+description: >- 
+   지식과 실패의 기록을 통해 지혜를 배우고, 그 지혜로 세상의 어두운 곳을 밝히는 기술을 개발하는 과정을 남긴다.
+   여기서의 모든 학습과 탐구는 나를 단련시키고, 혁신적인 기술로 세상에 긍정적인 영향을 끼치기 위한 수련의 장이다.
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "" # the base hostname & protocol for your site, e.g. http://example.com
-twitter_username: jekyllrb
-github_username:  jekyll
-
+url: "https://chsy0823.github.io" # the base hostname & protocol for your site, e.g. http://example.com
+github_username: chsy0823
+repository: chsy0823.github.io
 # Build settings
-theme: minima
+theme: minimal-mistakes-jekyll
 plugins:
   - jekyll-feed
+  - jekyll-category-pages
+
+minimal_mistakes_skin: "dark" 
+teaser: "/assets/images/teaser.jpg"
+breadcrumbs: true
+show_date: true
+search: true
+defaults:
+  # _posts
+  - scope:
+      path: ""
+      type: posts
+    values:
+      author_profile: true
+author:
+  name: "SY Choi (Elon)"
+  avatar: "/assets/images/avatar.jpg"
+  bio: "degree of Master of Science in Computer & Information Communication Engineering"
+  location: "Seoul, Korea"
+  github: "chsy0823"
+  links:
+    - label: "Email"
+      icon: "fas fa-fw fa-envelope-square"
+      url: "mailto:chsy0823@gmail.com"
+
+jekyll-archives:
+  enabled: [categories, tags]
+  layouts:
+    category: category
+    tag: tag
+  permalinks:
+    tag: /tags/:name/
+    category: /categories/:name/
+
+include:
+  - _pages
+  - .htaccess
+
+# Analytics
+analytics:
+  provider               : google # false (default), "google", "google-universal", "google-gtag", "custom"
+  google:
+    tracking_id          : G-J63Y8EDP27
+    anonymize_ip         : # true, false (default)
 
 # Exclude from processing.
 # The following items will not be processed, by default.
