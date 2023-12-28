@@ -77,7 +77,7 @@ include:
 
 # Analytics
 analytics:
-  provider               : google # false (default), "google", "google-universal", "google-gtag", "custom"
+  provider               : google-gtag # false (default), "google", "google-universal", "google-gtag", "custom"
   google:
     tracking_id          : G-J63Y8EDP27
     anonymize_ip         : # true, false (default)
