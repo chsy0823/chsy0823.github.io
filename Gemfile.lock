@@ -302,6 +302,7 @@ DEPENDENCIES
   jekyll-admin
   jekyll-category-pages
   jekyll-feed (~> 0.12)
+  jekyll-include-cache
   jekyll-paginate
   minima (~> 2.5)
   minimal-mistakes-jekyll

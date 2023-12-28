@@ -32,10 +32,12 @@ url: "https://chsy0823.github.io" # the base hostname & protocol for your site, 
 github_username: chsy0823
 repository: chsy0823.github.io
 # Build settings
-theme: minimal-mistakes-jekyll
+#theme: minimal-mistakes-jekyll
+remote_theme: "mmistakes/minimal-mistakes"
 plugins:
   - jekyll-feed
   - jekyll-category-pages
+  - jekyll-include-cache
 
 minimal_mistakes_skin: "dark" 
 teaser: "/assets/images/teaser.jpg"
