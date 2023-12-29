@@ -82,6 +82,7 @@ analytics:
     tracking_id          : G-J63Y8EDP27
     anonymize_ip         : # true, false (default)
 
+google_site_verification: 9-cUW-VAhSn2wCPCbGRdyEcjXQJst2-L5nmUxJZEvmk
 # Exclude from processing.
 # The following items will not be processed, by default.
 # Any item listed under the `exclude:` key here will be automatically added to
