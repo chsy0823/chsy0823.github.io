@@ -38,6 +38,7 @@ const config: Config = {
     [
       'classic',
       {
+        docs: false,
         blog: {
           showReadingTime: true,
           feedOptions: {
