@@ -1,0 +1,14 @@
+facebook:
+  label: Facebook
+  permalink: /facebook
+  description: Facebook tag description
+
+architecture:
+  label: Architecture
+  permalink: /architecture
+  description: Architecture tag description
+
+distributed_system:
+  label: Distributed System
+  permalink: /distributed_system
+  description: Distributed System tag description

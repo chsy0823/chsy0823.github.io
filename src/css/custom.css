@@ -1,0 +1,39 @@
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+/* You can override the default Infima variables here. */
+:root {
+  --ifm-color-primary: #008080;            /* Base: teal (0,128,128) */
+  --ifm-color-primary-dark: #007373;         /* 90% brightness: (0,115,115) */
+  --ifm-color-primary-darker: #006666;       /* 80% brightness: (0,102,102) */
+  --ifm-color-primary-darkest: #005a5a;      /* 70% brightness: (0,90,90) */
+  --ifm-color-primary-light: #008d8d;        /* 110% brightness: (0,141,141) */
+  --ifm-color-primary-lighter: #009a9a;      /* 120% brightness: (0,154,154) */
+  --ifm-color-primary-lightest: #00a6a6;     /* 130% brightness: (0,166,166) */
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme='dark'] {
+  --ifm-color-primary: #66cdaa;      /* Base: 66cdaa */
+  --ifm-color-primary-dark: #5cb999;   /* 90% brightness */
+  --ifm-color-primary-darker: #52a488; /* 80% brightness */
+  --ifm-color-primary-darkest: #479077;/* 70% brightness */
+  --ifm-color-primary-light: #70e2bb;  /* 110% brightness */
+  --ifm-color-primary-lighter: #7af6cc;/* 120% brightness */
+  --ifm-color-primary-lightest: #85ffdd;/* 130% brightness, green channel clamped at 255 */
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+img + em {
+  display: block;
+}
+em {
+  font-style: normal;
+  font-size: 0.8em;
+  color: #797979;
+  margin-bottom: 1em;
+}
