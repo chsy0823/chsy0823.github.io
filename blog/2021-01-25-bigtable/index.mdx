@@ -123,16 +123,16 @@ Bigtable 에 저장되는 데이터는 3차원 array 에 접근하는 expression
   - 동일 Row Key에 대한 읽기/쓰기는 **Atomic** 하게 처리됨(해당 Row에 있는 여러 컬럼에 대한 연산도 동시에 atomic operation 으로 수행).
 - **Lexicographic 정렬 및 동적 분할**
   - Bigtable은 **Row Key 기준으로 사전순(lexicographic order) 정렬을 유지**함.
-  - 테이블은 **Row Key의 범위에 따라 동적으로 분할(파티셔닝)**되고, 각 범위를 **Tablet**이라 부름.
+  - 테이블은 **Row Key의 범위에 따라 동적으로 분할(파티셔닝)** 되고, 각 범위를 **Tablet**이라 부름.
   - **Tablet 단위로 분산 및 부하 분산**(load balancing)이 이뤄지므로,
-    - 인접한 Row 범위를 읽을 때는 비교적 적은 수의 서버(node)만 통신하면 되어서 효율적. (Locality of data)
+    - 인접한 Row 범위를 읽을 때는 비교적 적은 수의 서버(node)만 통신하면 되고, Disk I/O에도 효율적. (Locality of data)
 - **로컬리티(Locality) 를 고려한 RowKey 설계 가능**
-  - 사용자는 **RowK ey를 잘 설계하여, 자주 함께 조회되는 데이터가 서로 인접하도록 저장할 수 있음**.
+  - 사용자는 **Row Key를 잘 설계하여, 자주 함께 조회되는 데이터가 서로 인접하도록 저장할 수 있음**.
     - 예시: 웹 페이지를 저장하는 Webtable은 도메인을 뒤집어서(예: com.google.maps/index.html) Row Key로 사용
   - 이를 통해 동일 도메인(maps.google.com, mail.google.com 등)의 웹 페이지들이 인접한 범위를 이루게 됨.
   - 이러한 접근 방식은 호스트나 도메인 단위의 분석에 유리하고, **연관 데이터 스캔 시 효율이 높아짐**.
 
-- **Row key 에 대한 atmoic operation 이 가지는 장점**
+- **Row key 에 대한 atomic operation 이 가지는 장점**
   - 여러 column 간의 부분 갱신으로 인한 데이터 불일치 문제를 방지 (일관성 유지)
   - Row 단위로 lock 이 걸리기 때문에 여러 column 간에 all-or-nothing 의 atomicity 를 보장
   - 쓰기 작업 실패로 인한 부분 column 갱신을 방지 (rollback 등 필요없음)
@@ -140,7 +140,8 @@ Bigtable 에 저장되는 데이터는 3차원 array 에 접근하는 expression
 ### Column Family
 - **Column Family의 기본 개념 및 구성**
   - Column Family는 **여러 개의 열(Column)들을 하나의 그룹으로 묶은 것**으로, Bigtable 에서의 기본 접근 제어 단위
-  - **데이터 일관성**: 한 Column Family 내에 저장되는 모든 데이터는 보통 같은 유형이며, **같은 유형의 데이터를 함께 압축**하여 저장할 수 있음
+  - **데이터 일관성**: 한 Column Family 내에 저장되는 모든 데이터는 보통 같은 유형이며, **같은 유형의 데이터를 함께 압축**하면 높은 압축률을 얻을 수 있음
+    - How? => 압축할때는 데이터 내의 **반복 패턴, 유사한 패턴이 많을 수록 압축률이 높은데**, column family 의 특성상, 같은 종류의 데이터는 반복되는 패턴이나 유사한 구조를 보이기 쉽기 떄문
   - **생성 순서**: Column Family는 **미리 생성**되어 있어야 하며, 생성된 후 그 안에서 어떤 Column key(형식: family:qualifier)도 사용가능
 
 - **Column Family 의 제약 조건**
@@ -151,6 +152,9 @@ Bigtable 에 저장되는 데이터는 3차원 array 에 접근하는 expression
   - RDB의 Column은 정해진 스키마에 따라 모든 행에 대해 동일하게 존재하는 **고정형 데이터 필드**로, 데이터 타입과 제약이 엄격하게 적용됨
   - 반면, Bigtable의 Column Family는 **미리 정의된 그룹 단위**로, **이 그룹 내에서 동적으로 다양한 Column Qualifier(실제 컬럼)가 추가**될 수 있으며, **이 단위로 압축, 접근 제어, 리소스 관리** 등이 이루어짐
 
+- **왜 Column Family는 미리 생성되어있어야하는가?**
+  - Column Family가 **runtime에 생성되지 않는 것을 가정하에, 읽기/쓰기 작업에서 최적의 성능을 유지**할 수 있도록 설계됨
+  - Column Family 설계는 RDB **Table 의 schema 를 설계하는 것과 유사**하며, 저장되는 **데이터 모델을 쉽게 이해하고 어플리케이션 로직을 구현하는데 도움**을 줌
 
 ### Timestamps
 - **다중 버전 관리의 목적**
