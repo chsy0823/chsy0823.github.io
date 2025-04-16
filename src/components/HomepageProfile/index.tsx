@@ -65,6 +65,10 @@ export default function HomepageProfile(): JSX.Element {
                 <strong>같이 성장하고 싶은 분들</strong>, 또는 <strong>협업을 고민하시는 분들</strong> 언제든 환영합니다. 😊
               </p>
               <div className={styles.socialLinks}>
+                <a href="/blog">
+                  Blog
+                </a>
+                {' | '}
                 <a
                   href="https://github.com/chsy0823"
                   target="_blank"
