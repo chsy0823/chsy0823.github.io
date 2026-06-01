@@ -19,6 +19,8 @@ const fullTitle = title === '최수용' ? title : `${title} — 최수용`;
   </head>
   <body class="bg-[#0a0a0a] text-[#e4e4e7] antialiased min-h-screen">
 
+    <canvas id="rain-canvas" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;"></canvas>
+
     <nav class="fixed top-0 inset-x-0 z-50 h-14 border-b border-[#1c1c1c] bg-[#0a0a0a]/85 backdrop-blur-md">
       <div class="max-w-5xl mx-auto px-6 h-full flex items-center justify-between">
         <a href="/" class="text-sm font-semibold text-white hover:text-teal-400 transition-colors tracking-tight">
@@ -28,13 +30,19 @@ const fullTitle = title === '최수용' ? title : `${title} — 최수용`;
           <a href="/blog" class="hover:text-white transition-colors">Writing</a>
           <a href="/about" class="hover:text-white transition-colors">About</a>
           <a href="https://github.com/chsy0823" target="_blank" rel="noopener" class="hover:text-white transition-colors">GitHub</a>
+          <button
+            id="weather-toggle"
+            class="hover:text-white transition-all duration-200 cursor-pointer leading-none"
+            aria-label="날씨 효과 끄기"
+            title="날씨 효과 끄기"
+          >⛈</button>
         </div>
       </div>
     </nav>
 
-    <main class="pt-14"><slot /></main>
+    <main class="relative z-10 pt-14"><slot /></main>
 
-    <footer class="mt-32 border-t border-[#1c1c1c]">
+    <footer class="relative z-10 mt-32 border-t border-[#1c1c1c]">
       <div class="max-w-5xl mx-auto px-6 py-8 flex items-center justify-between">
         <span class="text-xs text-[#3f3f46]">© {new Date().getFullYear()} 최수용</span>
         <a href="mailto:chsy0823@gmail.com" class="text-xs text-[#3f3f46] hover:text-white transition-colors">
@@ -45,3 +53,151 @@ const fullTitle = title === '최수용' ? title : `${title} — 최수용`;
 
   </body>
 </html>
+
+<script>
+  const canvas = document.getElementById('rain-canvas') as HTMLCanvasElement;
+  const ctx = canvas.getContext('2d')!;
+  const toggleBtn = document.getElementById('weather-toggle') as HTMLButtonElement;
+
+  const ANGLE = 0.22;
+  interface Drop { x: number; y: number; spd: number; len: number; opa: number; lw: number; }
+
+  let W = 0, H = 0, drops: Drop[] = [];
+  let rafId = 0;
+  let ltScheduleId = 0;
+  let ltPts: [number, number][] = [];
+  let ltBoltOpa = 0;
+  let ltFlashOpa = 0;
+
+  function makeDrop(randomY = false): Drop {
+    return {
+      x: Math.random() * W,
+      y: randomY ? Math.random() * H : -Math.random() * H * 0.4,
+      spd: 5 + Math.random() * 10,
+      len: 8 + Math.random() * 20,
+      opa: 0.04 + Math.random() * 0.13,
+      lw: Math.random() < 0.25 ? 0.9 : 0.5,
+    };
+  }
+
+  function init() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    drops = Array.from({ length: Math.floor(W / 11) }, () => makeDrop(true));
+  }
+
+  function buildBolt(
+    x1: number, y1: number, x2: number, y2: number,
+    spread: number, min: number, out: [number, number][]
+  ) {
+    if (spread < min) { out.push([x2, y2]); return; }
+    const mx = (x1 + x2) / 2 + (Math.random() - 0.5) * spread;
+    const my = (y1 + y2) / 2 + (Math.random() - 0.5) * spread * 0.25;
+    buildBolt(x1, y1, mx, my, spread / 2, min, out);
+    buildBolt(mx, my, x2, y2, spread / 2, min, out);
+  }
+
+  function triggerLightning() {
+    const sx = W * (0.15 + Math.random() * 0.7);
+    const ex = sx + (Math.random() - 0.5) * 180;
+    const ey = H * (0.25 + Math.random() * 0.45);
+
+    ltPts = [[sx, 0]];
+    buildBolt(sx, 0, ex, ey, 110, 8, ltPts);
+
+    ltBoltOpa = 0.9; ltFlashOpa = 0.09;
+    setTimeout(() => { ltBoltOpa = 0.35; ltFlashOpa = 0.04; }, 70);
+    setTimeout(() => { ltBoltOpa = 0;    ltFlashOpa = 0;    }, 180);
+
+    if (Math.random() < 0.45) {
+      const d = 250 + Math.random() * 200;
+      setTimeout(() => {
+        ltBoltOpa = 0.55; ltFlashOpa = 0.06;
+        setTimeout(() => { ltBoltOpa = 0.2;  ltFlashOpa = 0.02; }, 60);
+        setTimeout(() => { ltBoltOpa = 0;    ltFlashOpa = 0;    }, 160);
+      }, d);
+    }
+
+    ltScheduleId = window.setTimeout(triggerLightning, 7000 + Math.random() * 22000);
+  }
+
+  function frame() {
+    ctx.clearRect(0, 0, W, H);
+
+    if (ltFlashOpa > 0) {
+      ctx.fillStyle = `rgba(155, 160, 165, ${ltFlashOpa})`;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    for (const d of drops) {
+      ctx.beginPath();
+      ctx.moveTo(d.x, d.y);
+      ctx.lineTo(d.x + d.len * ANGLE, d.y + d.len);
+      ctx.strokeStyle = `rgba(130, 190, 215, ${d.opa})`;
+      ctx.lineWidth = d.lw;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+      d.y += d.spd;
+      d.x += d.spd * ANGLE;
+      if (d.y > H + d.len) Object.assign(d, makeDrop());
+    }
+
+    if (ltBoltOpa > 0 && ltPts.length > 1) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(ltPts[0][0], ltPts[0][1]);
+      for (let i = 1; i < ltPts.length; i++) ctx.lineTo(ltPts[i][0], ltPts[i][1]);
+      ctx.shadowColor = `rgba(160, 210, 255, ${ltBoltOpa})`;
+      ctx.shadowBlur = 14;
+      ctx.strokeStyle = `rgba(220, 240, 255, ${ltBoltOpa * 0.5})`;
+      ctx.lineWidth = 3;
+      ctx.stroke();
+      ctx.shadowBlur = 6;
+      ctx.strokeStyle = `rgba(240, 248, 255, ${ltBoltOpa})`;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    rafId = requestAnimationFrame(frame);
+  }
+
+  function startWeather() {
+    init();
+    rafId = requestAnimationFrame(frame);
+    ltScheduleId = window.setTimeout(triggerLightning, 4000 + Math.random() * 8000);
+  }
+
+  function stopWeather() {
+    cancelAnimationFrame(rafId);
+    rafId = 0;
+    clearTimeout(ltScheduleId);
+    ltBoltOpa = 0;
+    ltFlashOpa = 0;
+    ctx.clearRect(0, 0, W, H);
+  }
+
+  function syncToggleBtn(on: boolean) {
+    toggleBtn.textContent = on ? '⛈' : '☀︎';
+    toggleBtn.style.opacity = on ? '' : '0.45';
+    toggleBtn.setAttribute('aria-label', on ? '날씨 효과 끄기' : '날씨 효과 켜기');
+    toggleBtn.setAttribute('title',      on ? '날씨 효과 끄기' : '날씨 효과 켜기');
+  }
+
+  // --- Init ---
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let weatherOn = !prefersReduced && localStorage.getItem('weather') !== 'off';
+
+  syncToggleBtn(weatherOn);
+  if (weatherOn) startWeather();
+
+  toggleBtn.addEventListener('click', () => {
+    weatherOn = !weatherOn;
+    localStorage.setItem('weather', weatherOn ? 'on' : 'off');
+    syncToggleBtn(weatherOn);
+    if (weatherOn) startWeather();
+    else stopWeather();
+  });
+
+  window.addEventListener('resize', () => { if (weatherOn) init(); }, { passive: true });
+</script>

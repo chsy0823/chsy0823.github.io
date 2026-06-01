@@ -5,9 +5,32 @@ import { getCollection } from 'astro:content';
 const allPosts = await getCollection('blog', ({ data }) => !data.draft);
 const posts = allPosts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 
+const allTags = [...new Set(posts.flatMap(p => p.data.tags))].sort();
+
+const tagCounts: Record<string, number> = {};
+posts.forEach(p => p.data.tags.forEach(tag => {
+  tagCounts[tag] = (tagCounts[tag] ?? 0) + 1;
+}));
+
 function formatDate(date: Date) {
   return new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })
     .format(date).replace(/\. /g, '.').replace(/\.$/, '');
+}
+
+const tagMeta: Record<string, { emoji: string; rgb: string }> = {
+  distributed_system: { emoji: '🌐', rgb: '34 211 238' },
+  architecture:       { emoji: '🏗️', rgb: '167 139 250' },
+  go:                 { emoji: '🐹', rgb: '56 189 248' },
+  k8s:                { emoji: '⚙️', rgb: '96 165 250' },
+  life:               { emoji: '🌱', rgb: '74 222 128' },
+  career:             { emoji: '📈', rgb: '251 191 36' },
+  book:               { emoji: '📖', rgb: '250 204 21' },
+  seminar:            { emoji: '🎙️', rgb: '251 113 133' },
+};
+const fallback = { emoji: '·', rgb: '113 113 122' };
+
+function getMeta(tag: string) {
+  return tagMeta[tag] ?? fallback;
 }
 ---
 
@@ -15,18 +38,61 @@ function formatDate(date: Date) {
 
   <section class="max-w-3xl mx-auto px-6 pt-20 pb-32">
 
-    <!-- 블로그 타이틀 -->
     <div class="mb-16">
-      <h1 class="text-2xl font-bold text-white mb-2 tracking-tight">Elon's Notes</h1>
-      <p class="text-sm text-[#52525b]">생각, 기술, 그리고 사이에 있는 것들</p>
+      <h1 class="text-2xl font-bold text-white mb-1 tracking-tight">Elon's Notes</h1>
+
+      <div class="mt-5 space-y-0.5">
+        <p class="text-sm text-[#52525b]">없던 것을 만드는 엔지니어. 소프트웨어도, 사운드도.</p>
+        <p class="text-sm text-[#3f3f46]">가끔 생각이 너무 많다.</p>
+      </div>
+
+      <div class="mt-8 font-mono space-y-2">
+        <div class="flex gap-x-5 items-baseline">
+          <span class="text-[12px] text-[#3f3f46]">coding</span>
+          <span class="text-[10px] text-[#2e2e35] italic">SF</span>
+          <span class="text-[12px] text-[#3f3f46]">fantasy</span>
+          <span class="text-[10px] text-[#2e2e35]">music</span>
+        </div>
+        <div class="flex gap-x-5 items-baseline pl-6">
+          <span class="text-[12px] text-[#474750] tracking-wide">neuroscience</span>
+          <span class="text-[10px] text-[#2e2e35] italic">self-development</span>
+        </div>
+        <div class="pl-12">
+          <span class="text-[12px] text-[#3f3f46] italic">contemplation</span>
+        </div>
+      </div>
+
+      <div class="mt-10 flex flex-wrap gap-2">
+        <button
+          data-tag="__all__"
+          data-rgb="45 212 191"
+          class="tag-btn px-2.5 py-1 rounded-sm text-[11px] font-mono border transition-all duration-150 cursor-pointer"
+          style="color: rgb(45 212 191); border-color: rgb(45 212 191 / 0.25);"
+        >
+          all <span class="opacity-40">{posts.length}</span>
+        </button>
+        {allTags.map(tag => {
+          const meta = getMeta(tag);
+          return (
+            <button
+              data-tag={tag}
+              data-rgb={meta.rgb}
+              class="tag-btn px-2.5 py-1 rounded-sm text-[11px] font-mono border transition-all duration-150 cursor-pointer"
+              style={`color: rgb(${meta.rgb}); border-color: rgb(${meta.rgb} / 0.25);`}
+            >
+              <span class="mr-0.5">{meta.emoji}</span>{tag.replace(/_/g, ' ')} <span class="opacity-40">{tagCounts[tag] ?? 0}</span>
+            </button>
+          );
+        })}
+      </div>
     </div>
 
-    <!-- 글 목록 -->
-    <div>
+    <div id="post-list">
       {posts.map((post) => (
         <a
           href={`/blog/${post.slug}`}
-          class="group flex flex-col sm:flex-row sm:items-baseline gap-1.5 sm:gap-8 py-4 border-b border-[#141414] hover:border-[#2a2a2a] transition-colors"
+          data-tags={post.data.tags.join(',')}
+          class="post-item group flex flex-col sm:flex-row sm:items-baseline gap-1.5 sm:gap-8 py-4 border-b border-[#141414] hover:border-[#2a2a2a] transition-colors"
         >
           <time class="text-[11px] text-[#3f3f46] tabular-nums shrink-0 sm:w-28 font-mono">
             {formatDate(post.data.date)}
@@ -45,6 +111,77 @@ function formatDate(date: Date) {
       ))}
     </div>
 
+    <button
+      id="load-more"
+      class="hidden w-full mt-1 py-4 text-[11px] font-mono text-[#3f3f46] border-b border-[#141414] hover:text-[#52525b] hover:border-[#2a2a2a] transition-colors"
+    >
+      더 보기 <span id="load-more-count" class="opacity-50"></span>
+    </button>
+
   </section>
 
 </BaseLayout>
+
+<script>
+  const PAGE_SIZE = 15;
+  let visibleCount = PAGE_SIZE;
+  let activeTag = '__all__';
+
+  const tagBtns = [...document.querySelectorAll<HTMLButtonElement>('.tag-btn')];
+  const postItems = [...document.querySelectorAll<HTMLElement>('.post-item')];
+  const loadMoreBtn = document.getElementById('load-more')!;
+  const loadMoreCount = document.getElementById('load-more-count')!;
+
+  function getFiltered(): HTMLElement[] {
+    if (activeTag === '__all__') return postItems;
+    return postItems.filter(item =>
+      (item.dataset.tags ?? '').split(',').includes(activeTag)
+    );
+  }
+
+  function render() {
+    const filtered = getFiltered();
+    const remaining = Math.max(0, filtered.length - visibleCount);
+
+    postItems.forEach(item => { item.style.display = 'none'; });
+    filtered.slice(0, visibleCount).forEach(item => { item.style.display = ''; });
+
+    if (remaining > 0) {
+      loadMoreBtn.classList.remove('hidden');
+      loadMoreCount.textContent = `(${remaining}개 남음)`;
+    } else {
+      loadMoreBtn.classList.add('hidden');
+    }
+  }
+
+  function activateTag(tag: string) {
+    activeTag = tag;
+    visibleCount = PAGE_SIZE;
+
+    tagBtns.forEach(btn => {
+      const rgb = btn.dataset.rgb!;
+      if (btn.dataset.tag === tag) {
+        btn.style.backgroundColor = `rgb(${rgb} / 0.12)`;
+        btn.style.borderColor = `rgb(${rgb} / 0.5)`;
+        btn.style.opacity = '1';
+      } else {
+        btn.style.backgroundColor = '';
+        btn.style.borderColor = `rgb(${rgb} / 0.25)`;
+        btn.style.opacity = tag === '__all__' ? '1' : '0.35';
+      }
+    });
+
+    render();
+  }
+
+  tagBtns.forEach(btn => {
+    btn.addEventListener('click', () => activateTag(btn.dataset.tag!));
+  });
+
+  loadMoreBtn.addEventListener('click', () => {
+    visibleCount += PAGE_SIZE;
+    render();
+  });
+
+  activateTag('__all__');
+</script>
