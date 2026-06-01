@@ -1,0 +1,33 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="About" description="Elon Choi — Software Engineer & Product Lead">
+  <section class="max-w-3xl mx-auto px-6 pt-20 pb-32">
+    <h1 class="text-2xl font-bold text-white mb-12 tracking-tight">About</h1>
+
+    <div class="prose prose-invert prose-zinc max-w-none
+      prose-p:text-[#a1a1aa] prose-p:leading-relaxed
+      prose-a:text-teal-400 prose-a:no-underline hover:prose-a:underline
+      prose-strong:text-white">
+
+      <p>
+        소프트웨어 엔지니어. 현재 <strong>DYPHI</strong>에서 Product Team Lead로 일하고 있다.
+        Go, Kubernetes, 분산시스템을 주로 다뤄왔고, 요즘은 AI-Native 워크플로우 설계에 빠져있다.
+      </p>
+
+      <p>
+        이 블로그는 기술 글만 쓰는 곳이 아니다. 일하면서, 살아가면서 드는 생각들 —
+        잘 정리되지 않더라도 — 을 기록하는 공간이다.
+      </p>
+
+      <p>
+        <a href="https://github.com/chsy0823" target="_blank" rel="noopener">GitHub</a>
+        {' · '}
+        <a href="https://linkedin.com/in/elonchoi" target="_blank" rel="noopener">LinkedIn</a>
+        {' · '}
+        <a href="mailto:chsy0823@gmail.com">chsy0823@gmail.com</a>
+      </p>
+    </div>
+  </section>
+</BaseLayout>

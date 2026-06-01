@@ -1,0 +1,45 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const allPosts = await getCollection('blog', ({ data }) => !data.draft);
+const sortedPosts = allPosts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+function formatDate(date: Date) {
+  return new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })
+    .format(date).replace(/\. /g, '.').replace(/\.$/, '');
+}
+---
+
+<BaseLayout title="Writing" description="기술, 분산시스템, AI 그리고 엔지니어링에 대한 글">
+  <section class="max-w-5xl mx-auto px-6 pt-16 pb-32">
+    <div class="mb-16">
+      <h1 class="text-4xl font-bold text-white mb-3 tracking-tight">Writing</h1>
+      <p class="text-sm text-[#52525b]">기술, 분산시스템, AI, 그리고 엔지니어링</p>
+    </div>
+
+    <div>
+      {sortedPosts.map((post) => (
+        <a href={`/blog/${post.slug}`}
+           class="group flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-8 py-5 border-b border-[#141414] hover:border-[#242424] transition-colors">
+          <time class="text-[11px] text-[#3f3f46] tabular-nums shrink-0 sm:w-28 font-mono">
+            {formatDate(post.data.date)}
+          </time>
+          <div class="flex-1 min-w-0">
+            <span class="block text-sm text-[#a1a1aa] group-hover:text-white transition-colors font-medium">
+              {post.data.title}
+            </span>
+            {post.data.description && (
+              <span class="block text-xs text-[#3f3f46] mt-1">{post.data.description}</span>
+            )}
+          </div>
+          <div class="flex gap-1.5 shrink-0">
+            {post.data.tags.map((tag: string) => (
+              <span class="text-[10px] text-[#3f3f46] border border-[#1f1f1f] px-2 py-0.5">{tag}</span>
+            ))}
+          </div>
+        </a>
+      ))}
+    </div>
+  </section>
+</BaseLayout>
