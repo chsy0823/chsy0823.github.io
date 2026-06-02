@@ -6,38 +6,50 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   <section class="max-w-3xl mx-auto px-6 pt-20 pb-32">
     <h1 class="text-2xl font-bold text-white mb-12 tracking-tight">About</h1>
 
-    <div class="prose prose-invert prose-zinc max-w-none
-      prose-p:text-[#a1a1aa] prose-p:leading-relaxed
-      prose-a:text-teal-400 prose-a:no-underline hover:prose-a:underline
-      prose-strong:text-white">
+    <div class="flex flex-col md:flex-row gap-10 md:gap-14 items-start">
 
-      <p>
-        음악을 사랑하는 10년차 소프트웨어 엔지니어. 요즘 가장 집중하는 건 AI-native 팀을 만들고,
-        나를 대신할 AI agent를 설계하는 일이다. 세상이 날 대체하기 전에, 내가 먼저 날 대체할 세상을 만드리라.
-      </p>
+      <div class="prose prose-invert prose-zinc max-w-none flex-1
+        prose-p:text-[#a1a1aa] prose-p:leading-relaxed
+        prose-a:text-teal-400 prose-a:no-underline hover:prose-a:underline
+        prose-strong:text-white">
 
-      <p>
-        코드를 쓰든 음악을 만들든 결국 같다 — 없던 것을 만드는 일. 이유는 잘 모르겠다. 그냥 좋다.
-      </p>
+        <p>
+          음악을 사랑하는 10년차 소프트웨어 엔지니어. 요즘 가장 집중하는 건 AI-native 팀을 만들고,
+          나를 대신할 AI agent를 설계하는 일이다. 세상이 날 대체하기 전에, 내가 먼저 날 대체할 세상을 만드리라.
+        </p>
 
-      <p>
-        분석력은 좋은데 실행으로 잘 이어지지 않는 사람이다. 스스로 알고 있다.
-        이 블로그를 시작한 이유 중 하나는 그거다. 이불을 개는 것처럼, 실패하기 어려운
-        아주 작은 단위의 일을 습관으로 만드는 것. 기술 정리, 일상 회고, 사색, 음악 — 장르는 상관없다.
-      </p>
+        <p>
+          코드를 쓰든 음악을 만들든 결국 같다 — 없던 것을 만드는 일. 이유는 잘 모르겠다. 그냥 좋다.
+        </p>
 
-      <p>
-        외부에 열려 있다는 점도 의도했다. 볼지 안 볼지도 모르는 슈뢰딩거의 독자들이 나의 감시자가 된다.
-        타인의 시선을 레버리지 하기에 블로그만한 게 없다.
-      </p>
+        <p>
+          분석력은 좋은데 실행으로 잘 이어지지 않는 사람이다. 스스로 알고 있다.
+          이 블로그를 시작한 이유 중 하나는 그거다. 이불을 개는 것처럼, 실패하기 어려운
+          아주 작은 단위의 일을 습관으로 만드는 것. 기술 정리, 일상 회고, 사색, 음악 — 장르는 상관없다.
+        </p>
 
-      <p>잘 정리되지 않더라도 올린다. 기록이 목적이다.</p>
+        <p>
+          외부에 열려 있다는 점도 의도했다. 볼지 안 볼지도 모르는 슈뢰딩거의 독자들이 나의 감시자가 된다.
+          타인의 시선을 레버리지 하기에 블로그만한 게 없다.
+        </p>
 
-      <p>
-        <a href="https://github.com/chsy0823" target="_blank" rel="noopener">GitHub</a>
-        {' · '}
-        <a href="mailto:chsy0823@gmail.com">chsy0823@gmail.com</a>
-      </p>
+        <p>잘 정리되지 않더라도 올린다. 기록이 목적이다.</p>
+
+        <p>
+          <a href="https://github.com/chsy0823" target="_blank" rel="noopener">GitHub</a>
+          {' · '}
+          <a href="mailto:chsy0823@gmail.com">chsy0823@gmail.com</a>
+        </p>
+      </div>
+
+      <div class="shrink-0 md:w-56 w-full">
+        <img
+          src="/img/crow.png"
+          alt="까마귀 마스코트"
+          class="w-full md:w-56 aspect-square object-cover rounded-sm opacity-90"
+        />
+      </div>
+
     </div>
   </section>
 </BaseLayout>
