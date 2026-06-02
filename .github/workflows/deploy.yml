@@ -25,6 +25,8 @@ jobs:
           cache: npm
       - uses: actions/configure-pages@v5
       - run: npm ci
+      # mermaid 다이어그램은 빌드 타임에 chromium(headless)으로 SVG 렌더링됨 (rehype-mermaid)
+      - run: npx playwright install --with-deps chromium
       - run: npm run build
       - uses: actions/upload-pages-artifact@v3
         with:
