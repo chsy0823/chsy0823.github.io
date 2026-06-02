@@ -59,6 +59,51 @@ Minor compaction 은 자주 일어나고 가볍다. 하지만 SSTable 파일 자
 | ⁉️잠깐: **"그럼 tombstone 이 쌓이는 동안 삭제된 데이터도 계속 읽히는 거야?"**
 읽기 시엔 SSTable 과 Memtable 을 최신 순서로 병합하므로, tombstone 이 있는 key 는 "삭제됨" 으로 처리되어 응답에 포함되지 않는다. 실제 물리적 삭제는 나중에 일어나지만, **논리적으로는 즉시 삭제된 것처럼 동작**한다.
 
+### 전체 생애주기 한눈에
+
+세 종류의 compaction 을 따로 보면 헷갈리지만, 데이터가 메모리에서 디스크로 흘러내려가며 **점점 적은 수의 SSTable 로 수렴**한다는 하나의 흐름으로 보면 명확해진다.
+
+```mermaid
+graph TB
+    W([Write])
+
+    subgraph mem[메모리]
+        MT["Memtable<br/>정렬된 in-memory 버퍼"]
+    end
+
+    subgraph disk[GFS · immutable]
+        direction TB
+        many["SSTable · SSTable · SSTable …<br/>(계속 누적)"]
+        few["SSTable 몇 개"]
+        one["단일 SSTable<br/>tombstone · 삭제 데이터 제거됨"]
+    end
+
+    W --> MT
+    MT == "① Minor — 가득 차면 freeze 후 flush" ==> many
+    many -- "② Merging — 일부 SSTable + Memtable 병합" --> few
+    few -- "③ Major — 전체를 하나로" --> one
+
+    R([Read]) -. "Bloom filter: key 없는 SSTable 은 skip" .-> disk
+    R -. "Memtable + SSTable 최신순 병합" .-> mem
+```
+
+Write 는 항상 메모리(Memtable)로만 들어가고, 디스크의 SSTable 은 한 번 쓰이면 불변이다. 그래서 "수정"이 없고 오직 **새 파일 추가 + 주기적 병합**만 있다. Read 는 그 시점의 Memtable 과 모든 SSTable 을 가로질러 병합하되, Bloom filter 로 불필요한 파일을 쳐낸다.
+
+> **잠깐 — 이 흐름, 어디서 본 것 같지 않은가?**
+>
+> 메모리의 정렬 버퍼에 쓰고 → 차면 immutable 파일로 flush 하고 → 파일이 쌓이면 백그라운드에서 병합하고 → 읽을 땐 여러 파일을 merge 하며 Bloom filter 로 가지치기한다. 이 패턴엔 이름이 있다 — **LSM-tree (Log-Structured Merge-tree).**
+
+그리고 핵심은, **네가 실무에서 쓰는 store 들이 대부분 이거다.**
+
+| 시스템 | 비고 |
+|--------|------|
+| LevelDB | Bigtable 저자(Jeff Dean · Sanjay Ghemawat)가 만든 단일 노드 LSM 엔진 |
+| RocksDB | LevelDB 를 Facebook 이 포크·확장 |
+| Cassandra · ScyllaDB | Memtable · SSTable · Compaction 용어를 그대로 사용 |
+| HBase | Bigtable 의 오픈소스 클론. HDFS 위에서 동일한 구조 |
+
+Memtable, SSTable, tombstone, compaction, bloom filter — 이 글에서 본 단어들이 저 시스템들의 문서에 거의 그대로 등장한다. Bigtable 논문(2006)이 사실상 LSM-tree 를 산업 표준으로 끌어올린 셈이다.
+
 ---
 
 ## 2. Refinements — 구글이 실전에서 추가한 것들
@@ -121,7 +166,7 @@ SSTable 이 여러 개 쌓여있는 상황에서, Bloom filter 덕분에 실제�
 
 **새로운 문제**: Tablet 이 다른 서버로 재할당될 때, 새 서버는 자기가 담당할 tablet 의 log 만 읽어야 하는데, 하나의 파일에 여러 tablet 의 log 가 섞여있다.
 
-**해결**: Log entry 를 `(tablet, sequence number)` 기준으로 정렬하여, 각 tablet 의 log 를 sequential 하게 읽을 수 있도록 준비한다. 정렬은 tablet server 64개가 병렬로 나눠서 수행한다.
+**해결**: Log entry 를 `(table, row, log sequence number)` 기준으로 정렬한다. 그러면 한 tablet(연속된 row 범위)의 mutation 들이 파일 안에서 연속 배치되어, 한 번의 seek + sequential read 로 읽을 수 있다. 정렬 자체는 commit log 파일을 **64MB segment 단위로 쪼개어** 여러 tablet server 가 병렬로 수행하며, 이 과정은 Master 가 조율한다.
 
 ### Immutability 활용
 
