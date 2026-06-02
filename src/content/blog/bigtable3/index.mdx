@@ -8,6 +8,71 @@ tags: ["distributed_system", "architecture"]
 [이전 Part](/blog/bigtable2) 에서는 Bigtable 을 구성하는 핵심 Building Block — GFS, SSTable, Chubby — 을 살펴보았다.
 이번 Part 에서는 실제 Implementation 에 해당하는 내용들을 정리한다: **Tablet 이 어디에 있는지 찾는 방법**, **어떻게 서버에 할당되는지**, 그리고 **실제 읽기/쓰기가 어떻게 동작하는지**.
 
+세부로 들어가기 전에, 등장인물들이 어떻게 엮여 있는지 전체 그림을 한 장으로 보자. **데이터는 여러 Tablet server 에 흩어져 있고**, 그 위치·할당·생존 관리는 Master 와 Chubby 가, 영구 저장은 GFS 가 맡는다.
+
+```mermaid
+graph TB
+    Client([Client])
+
+    subgraph control[제어 평면 — 데이터 경로 밖]
+        Master["Master<br/>tablet 할당 · server 생존 감시"]
+        Chubby[("Chubby<br/>lock · Root tablet 위치")]
+    end
+
+    subgraph serving[Tablet Servers — 데이터 평면]
+        direction LR
+        subgraph TSA["Tablet Server A"]
+            root["Root tablet<br/>(분할 안 됨)"]
+            au["User tablet"]
+        end
+        subgraph TSB["Tablet Server B"]
+            bm["METADATA tablet"]
+            bu["User tablet"]
+        end
+        subgraph TSC["Tablet Server C"]
+            cm["METADATA tablet"]
+            cu["User tablet"]
+        end
+    end
+
+    GFS[("GFS<br/>SSTable · Commit log (영구 저장)")]
+
+    Client -- "① 위치 탐색" --> Chubby
+    Chubby -. "Root tablet 위치" .-> root
+    root -. "METADATA 위치" .-> bm
+    bm -. "user tablet 위치" .-> cu
+    Client == "② 데이터 R/W — Master 안 거침" ==> serving
+    Master -- "tablet 할당" --> serving
+    Master -. "master lock" .- Chubby
+    serving -. "exclusive lock (생존 신호)" .- Chubby
+    TSA -- "SSTable · commit log" --> GFS
+    TSB --> GFS
+    TSC --> GFS
+```
+
+핵심은 세 가지다. (1) **위치 탐색은 3단계 체인** — Chubby 가 Root tablet 위치를 알려주고, Root tablet 이 METADATA tablet 을, METADATA 가 실제 user tablet 의 위치를 가리킨다 (점선 경로). 여기서 중요한 점 — **Root·METADATA tablet 도 결국 그냥 tablet** 이라, Master 가 일반 user tablet 과 똑같이 각각 독립적으로 서버에 할당한다. METADATA tablet 은 **여러 서버에 분산**되고(B·C), Root tablet 의 유일한 특별함은 "절대 분할되지 않는다"는 것뿐이다. 그래서 탐색 체인이 서버를 넘나든다(A → B → C). (2) **데이터 읽기/쓰기는 Client ↔ Tablet server 직접 경로**(굵은 화살표)라서 Master 를 거치지 않는다. (3) **Chubby 가 모든 상태의 중심축**이다 — Root tablet 위치도, 각 Tablet server 의 생존(lock)도, Master 끼리의 단일성 보장(master lock)도 전부 Chubby 에 모인다. 아래 세 절은 이 그림의 각 부분을 확대한 것이다.
+
+> **잠깐 — 이 그림, 어디서 본 것 같지 않은가?**
+>
+> 일을 **결정**하는 컨트롤 플레인(Master + Chubby)과 실제 트래픽을 **처리**하는 데이터 평면(Tablet servers + GFS)이 갈려 있고, 그 사이를 합의 기반 코디네이션 서비스가 떠받치는 구조. 그렇다 — **Kubernetes 가 떠오른다는 사람이 꽤 있을 것이다.** 그리고 그건 우연이 아니다.
+
+용어를 거의 1:1 로 매핑할 수 있다:
+
+| Bigtable | Kubernetes | 역할 |
+|----------|------------|------|
+| Chubby | etcd | 합의 기반 메타데이터·락 저장소. 멤버십/리더 선출의 source of truth |
+| Master | scheduler + controller-manager | 배치 결정(tablet 할당 ↔ pod 스케줄링)과 장애 시 재할당 |
+| Tablet server | kubelet (node) | 실제 일을 하는 데이터 평면 일꾼 |
+| GFS | PV / 스토리지 계층 | 영구 저장 |
+
+관통하는 설계 원칙은 두 가지다.
+
+**① 데이터 경로는 컨트롤 플레인을 우회한다.** Bigtable 에서 Master 가 죽어도 read/write 가 계속되듯, k8s 도 API server·scheduler 가 다 내려가도 **이미 떠 있는 Pod 는 멀쩡히 트래픽을 받는다.** 멈추는 건 "새 배치와 재배치"뿐이다. 코디네이터를 hot path 에서 빼야, 그게 병목이 되거나 잠깐 죽어도 서비스가 죽지 않는다.
+
+**② 오케스트레이터와 합의 저장소를 분리한다.** Master 자신은 Paxos 를 돌리지 않는다. 상태의 진실은 Chubby 에 있고, Master 는 그걸 읽어 일하는 거의 stateless 한 존재라 죽으면 Chubby lock 잡고 재시작해 복구하면 그만이다. k8s 의 API server ↔ etcd 관계와 똑같다.
+
+그리고 닮은 게 우연이 아닌 **결정적 이유** — Kubernetes 는 구글 내부 클러스터 매니저 **Borg** 의 오픈소스 후손이고, **그 Borg 도 Chubby 를 썼다.** Bigtable(2006)과 Kubernetes(2014)는 10년 가까이 떨어져 있지만, 결국 같은 구글 인프라 DNA — *합의 기반 코디네이션 + 컨트롤/데이터 평면 분리* — 에서 자란 셈이다. HDFS(NameNode/DataNode)나 Kafka(controller/broker + ZooKeeper·KRaft)도 같은 패턴을 공유한다.
+
 ---
 
 ## 1. Tablet Location — "이 데이터가 어느 서버에 있는가?"
