@@ -34,33 +34,43 @@ function getMeta(tag: string) {
 }
 ---
 
-<BaseLayout title="Elon's Notes" description="생각, 기술, 그리고 사이에 있는 것들">
+<BaseLayout title="Coda's Notes" description="생각, 기술, 그리고 사이에 있는 것들">
 
   <section class="max-w-3xl mx-auto px-6 pt-20 pb-32">
 
-    <div class="mb-16">
-      <h1 class="text-2xl font-bold text-white mb-1 tracking-tight">Elon's Notes</h1>
+    <div class="mb-16 flex flex-row gap-6 items-end">
 
-      <div class="mt-5 space-y-0.5">
-        <p class="text-sm text-[#52525b]">없던 것을 만드는 엔지니어. 소프트웨어도, 사운드도.</p>
-        <p class="text-sm text-[#3f3f46]">가끔 생각이 너무 많다.</p>
+      <div class="flex-1 min-w-0">
+        <h1 class="text-2xl font-bold text-white mb-1 tracking-tight">Coda's Notes</h1>
+
+        <div class="mt-5 space-y-0.5">
+          <p class="text-sm text-[#52525b]">없던 것을 만드는 엔지니어. 소프트웨어도, 사운드도.</p>
+          <p class="text-sm text-[#3f3f46]">가끔 생각이 너무 많다.</p>
+        </div>
+
+        <div class="mt-8 font-mono space-y-2">
+          <div class="flex gap-x-5 items-baseline">
+            <span class="text-[12px] text-[#3f3f46]">coding</span>
+            <span class="text-[10px] text-[#2e2e35] italic">SF</span>
+            <span class="text-[12px] text-[#3f3f46]">fantasy</span>
+            <span class="text-[10px] text-[#2e2e35]">music</span>
+          </div>
+          <div class="flex gap-x-5 items-baseline pl-6">
+            <span class="text-[12px] text-[#474750] tracking-wide">neuroscience</span>
+            <span class="text-[10px] text-[#2e2e35] italic">self-development</span>
+          </div>
+          <div class="pl-12">
+            <span class="text-[12px] text-[#3f3f46] italic">contemplation</span>
+          </div>
+        </div>
       </div>
 
-      <div class="mt-8 font-mono space-y-2">
-        <div class="flex gap-x-5 items-baseline">
-          <span class="text-[12px] text-[#3f3f46]">coding</span>
-          <span class="text-[10px] text-[#2e2e35] italic">SF</span>
-          <span class="text-[12px] text-[#3f3f46]">fantasy</span>
-          <span class="text-[10px] text-[#2e2e35]">music</span>
-        </div>
-        <div class="flex gap-x-5 items-baseline pl-6">
-          <span class="text-[12px] text-[#474750] tracking-wide">neuroscience</span>
-          <span class="text-[10px] text-[#2e2e35] italic">self-development</span>
-        </div>
-        <div class="pl-12">
-          <span class="text-[12px] text-[#3f3f46] italic">contemplation</span>
-        </div>
+      <div class="shrink-0 w-36 sm:w-44">
+        <img id="coda-rain"  src="/img/coda-rain.png"  alt="Coda" class="w-full" />
+        <img id="coda-clear" src="/img/coda-clear.png" alt="Coda" class="w-full hidden" />
       </div>
+
+    </div>
 
       <div class="mt-10 flex flex-wrap gap-2">
         <button
@@ -184,4 +194,19 @@ function getMeta(tag: string) {
   });
 
   activateTag('__all__');
+
+  // Coda image: rain ↔ clear based on weather state
+  const codaRain  = document.getElementById('coda-rain')  as HTMLImageElement;
+  const codaClear = document.getElementById('coda-clear') as HTMLImageElement;
+
+  function updateCoda(on: boolean) {
+    codaRain.classList.toggle('hidden', !on);
+    codaClear.classList.toggle('hidden', on);
+  }
+
+  updateCoda(localStorage.getItem('weather') !== 'off');
+
+  window.addEventListener('weather-change', (e: Event) => {
+    updateCoda((e as CustomEvent<{ on: boolean }>).detail.on);
+  });
 </script>

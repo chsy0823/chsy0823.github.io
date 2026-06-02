@@ -1,4 +1,4 @@
-# chsy0823.github.io — Elon's Notes
+# chsy0823.github.io — Coda's Notes
 
 개인 블로그. 기술 글, 생각 정리, 세미나 후기 등 장르 불문.
 Astro 4 + Tailwind CSS 3 + MDX 기반. GitHub Pages 배포.
@@ -96,7 +96,7 @@ prose-hr:border-[#1c1c1c]
 
 ## 블로그 철학
 
-- **이름 노출 최소화**: nav/홈은 "Elon's Notes", 실명은 footer와 About에만.
+- **이름 노출 최소화**: nav/홈은 "Coda's Notes", 실명은 footer와 About에만.
 - **카테고리 없음**: 태그만. `tags: ["distributed_system", "life", "career"]` 등 자유롭게.
 - **완벽주의 금지**: 잘 정리 안 됐어도 올린다. 기록이 목적.
 - **글 분류 기준**: 기술(`distributed_system`, `architecture`, `go`, `k8s`), 생각(`life`, `career`), 독서(`book`), 세미나(`seminar`) 등.
