@@ -1,0 +1,105 @@
+/*
+ * Coda's Notes — giscus 커스텀 다크 테마
+ * Dark Editorial 팔레트에 맞춘 댓글 테마. (CLAUDE.md 색상표와 동기화할 것)
+ * giscus 가 iframe 안에서 fetch 해 적용한다. data-theme 의 URL 로 참조.
+ * 공식 dark 테마(github.com/giscus/giscus/blob/main/styles/themes/dark.css) 기반.
+ */
+main {
+  --color-prettylights-syntax-comment: #71717a;
+  --color-prettylights-syntax-constant: #5ed3c7;
+  --color-prettylights-syntax-entity: #c8a2ff;
+  --color-prettylights-syntax-storage-modifier-import: #e4e4e7;
+  --color-prettylights-syntax-entity-tag: #2dd4bf;
+  --color-prettylights-syntax-keyword: #ff7b9c;
+  --color-prettylights-syntax-string: #99e6d8;
+  --color-prettylights-syntax-variable: #f0b890;
+  --color-prettylights-syntax-brackethighlighter-unmatched: #f87171;
+  --color-prettylights-syntax-invalid-illegal-text: #f8fafc;
+  --color-prettylights-syntax-invalid-illegal-bg: #7f1d1d;
+  --color-prettylights-syntax-carriage-return-text: #f8fafc;
+  --color-prettylights-syntax-carriage-return-bg: #be4f54;
+  --color-prettylights-syntax-string-regexp: #99e6d8;
+  --color-prettylights-syntax-markup-list: #f0d8a8;
+  --color-prettylights-syntax-markup-heading: #2dd4bf;
+  --color-prettylights-syntax-markup-italic: #e4e4e7;
+  --color-prettylights-syntax-markup-bold: #e4e4e7;
+  --color-prettylights-syntax-markup-deleted-text: #ffd7d5;
+  --color-prettylights-syntax-markup-deleted-bg: #4d1f23;
+  --color-prettylights-syntax-markup-inserted-text: #aff5b4;
+  --color-prettylights-syntax-markup-inserted-bg: #133a23;
+  --color-prettylights-syntax-markup-changed-text: #ffddb0;
+  --color-prettylights-syntax-markup-changed-bg: #5a1e02;
+  --color-prettylights-syntax-markup-ignored-text: #e4e4e7;
+  --color-prettylights-syntax-markup-ignored-bg: #14746a;
+  --color-prettylights-syntax-meta-diff-range: #c8a2ff;
+  --color-prettylights-syntax-sublimelinter-gutter-mark: #3f3f46;
+
+  --color-btn-text: #e4e4e7;
+  --color-btn-bg: #141414;
+  --color-btn-border: #1c1c1c;
+  --color-btn-shadow: 0 0 transparent;
+  --color-btn-inset-shadow: 0 0 transparent;
+  --color-btn-hover-bg: #1c1c1c;
+  --color-btn-hover-border: #2dd4bf;
+  --color-btn-active-bg: #0f0f0f;
+  --color-btn-active-border: #2dd4bf;
+  --color-btn-selected-bg: #0a0a0a;
+  --color-btn-primary-text: #04201c;
+  --color-btn-primary-bg: #2dd4bf;
+  --color-btn-primary-border: transparent;
+  --color-btn-primary-shadow: 0 0 transparent;
+  --color-btn-primary-inset-shadow: 0 0 transparent;
+  --color-btn-primary-hover-bg: #14b8a6;
+  --color-btn-primary-hover-border: transparent;
+  --color-btn-primary-selected-bg: #0d9488;
+  --color-btn-primary-disabled-text: rgba(228, 228, 231, 0.5);
+  --color-btn-primary-disabled-bg: rgba(45, 212, 191, 0.4);
+  --color-btn-primary-disabled-border: transparent;
+
+  --color-action-list-item-default-hover-bg: rgba(28, 28, 28, 0.6);
+  --color-segmented-control-bg: #111111;
+  --color-segmented-control-button-bg: #0a0a0a;
+  --color-segmented-control-button-selected-border: #2dd4bf;
+
+  --color-fg-default: #e4e4e7;
+  --color-fg-muted: #a1a1aa;
+  --color-fg-subtle: #71717a;
+  --color-canvas-default: #0a0a0a;
+  --color-canvas-overlay: #111111;
+  --color-canvas-inset: #0f0f0f;
+  --color-canvas-subtle: #111111;
+  --color-border-default: #1c1c1c;
+  --color-border-muted: #161616;
+  --color-neutral-muted: rgba(113, 113, 122, 0.18);
+  --color-accent-fg: #2dd4bf;
+  --color-accent-emphasis: #14b8a6;
+  --color-accent-muted: rgba(45, 212, 191, 0.4);
+  --color-accent-subtle: rgba(45, 212, 191, 0.12);
+  --color-success-fg: #5ed3c7;
+  --color-attention-fg: #f0b890;
+  --color-attention-muted: rgba(240, 184, 144, 0.4);
+  --color-attention-subtle: rgba(240, 184, 144, 0.1);
+  --color-danger-fg: #f87171;
+  --color-danger-muted: rgba(248, 113, 113, 0.4);
+  --color-danger-subtle: rgba(248, 113, 113, 0.1);
+
+  --color-primer-shadow-inset: 0 0 transparent;
+  --color-scale-gray-7: #1c1c1c;
+  --color-scale-gray-6: #2a2a2a;
+
+  /* reaction / social */
+  --color-social-reaction-bg-hover: #1c1c1c;
+  --color-social-reaction-bg-reacted-hover: #14b8a6;
+}
+
+main .pagination-loader-container {
+  background-image: none;
+}
+
+main .gsc-loading-image {
+  background-image: none;
+}
+
+main {
+  background-color: transparent;
+}

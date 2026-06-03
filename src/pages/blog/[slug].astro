@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Comments from '../../components/Comments.astro';
 import { getCollection } from 'astro:content';
 
 export async function getStaticPaths() {
@@ -60,6 +61,8 @@ const formattedDate = new Intl.DateTimeFormat('ko-KR', {
       prose-table:text-[#a1a1aa] prose-th:text-white prose-th:border-[#1c1c1c] prose-td:border-[#1c1c1c]">
       <Content />
     </div>
+
+    <Comments />
 
     <div class="mt-16 pt-8 border-t border-[#1c1c1c]">
       <a href="/blog" class="text-sm text-[#3f3f46] hover:text-white transition-colors">← 모든 글</a>

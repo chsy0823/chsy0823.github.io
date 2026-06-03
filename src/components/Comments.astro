@@ -1,0 +1,32 @@
+---
+/*
+ * giscus 댓글 (GitHub Discussions 기반).
+ * Discussions 의 "Announcements" 카테고리에 글 경로(pathname)별 스레드 자동 생성.
+ * repo-id / category-id 는 gh GraphQL 로 조회한 값. 레포 변경 시 재조회 필요.
+ *   repo-id:     gh repo view <owner/repo> --json id
+ *   category-id: gh api graphql -f query='{ repository(...){ discussionCategories(first:10){ nodes { id name } } } }'
+ * 테마는 사이트 톤에 맞춘 커스텀 CSS (public/giscus-theme.css) 를 절대 URL 로 참조.
+ */
+const themeUrl = new URL('/giscus-theme.css', Astro.site).href;
+---
+
+<section class="mt-16 pt-10 border-t border-[#1c1c1c]" aria-label="댓글">
+  <h2 class="text-sm font-semibold text-[#71717a] mb-6 tracking-tight">댓글</h2>
+  <script
+    src="https://giscus.app/client.js"
+    data-repo="chsy0823/chsy0823.github.io"
+    data-repo-id="R_kgDOK-JT5A"
+    data-category="Announcements"
+    data-category-id="DIC_kwDOK-JT5M4C-Zz-"
+    data-mapping="pathname"
+    data-strict="0"
+    data-reactions-enabled="1"
+    data-emit-metadata="0"
+    data-input-position="bottom"
+    data-theme={themeUrl}
+    data-lang="ko"
+    data-loading="lazy"
+    crossorigin="anonymous"
+    async
+  ></script>
+</section>
